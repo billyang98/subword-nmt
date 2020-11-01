@@ -128,6 +128,7 @@ class BPE(object):
         return out
 
     def segment(self, sentence, dropout=0):
+        # TODO: I think this is the method to call for it a line
         """segment single sentence (whitespace-tokenized string) with BPE encoding"""
         segments = self.segment_tokens(sentence.strip('\r\n ').split(' '), dropout)
         return ' '.join(segments)
@@ -437,6 +438,11 @@ if __name__ == '__main__':
     if args.seed is not None:
         random.seed(args.seed)
 
+    # codes: codes file opened
+    # merges: -1 default, apply learned merge operations
+    # separator: @@ default
+    # vocabulary: None, default
+    # glossaries: None default
     bpe = BPE(args.codes, args.merges, args.separator, vocabulary, args.glossaries)
 
     if args.input.name == '<stdin>' or args.num_workers == 1:
@@ -445,4 +451,5 @@ if __name__ == '__main__':
         for line in args.input:
             args.output.write(bpe.process_line(line, args.dropout))
     else:
+        # input file, output file, dropout: 0 default, num_workers: 1 default
         bpe.process_lines(args.input.name, args.output, args.dropout, args.num_workers)
