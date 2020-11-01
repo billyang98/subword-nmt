@@ -24,6 +24,7 @@ import warnings
 import tempfile
 from multiprocessing import Pool, cpu_count
 from collections import defaultdict, Counter
+from tqdm import tqdm
 
 # hack for python2/3 compatibility
 from io import open
@@ -294,7 +295,7 @@ def learn_bpe(infile, outfile, num_symbols, min_frequency=2, verbose=False, is_d
 
     # threshold is inspired by Zipfian assumption, but should only affect speed
     threshold = max(stats.values()) / 10
-    for i in range(num_symbols):
+    for i in tqdm(range(num_symbols)):
         if stats:
             most_frequent = max(stats, key=lambda x: (stats[x], x))
 
@@ -322,40 +323,42 @@ def learn_bpe(infile, outfile, num_symbols, min_frequency=2, verbose=False, is_d
 
 
 if __name__ == '__main__':
+    infile = codecs.open('../../dataset/all_lyrics_raw.txt', encoding='utf-8')
+    outfile = codecs.open('bpe_codes.txt', 'w', encoding='utf-8')
+    learn_bpe(infile, outfile, 32000)
+    # currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    # newdir = os.path.join(currentdir, 'subword_nmt')
+    # if os.path.isdir(newdir):
+    #     warnings.simplefilter('default')
+    #     warnings.warn(
+    #         "this script's location has moved to {0}. This symbolic link will be removed in a future version. Please point to the new location, or install the package and use the command 'subword-nmt'".format(newdir),
+    #         DeprecationWarning
+    #     )
 
-    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    newdir = os.path.join(currentdir, 'subword_nmt')
-    if os.path.isdir(newdir):
-        warnings.simplefilter('default')
-        warnings.warn(
-            "this script's location has moved to {0}. This symbolic link will be removed in a future version. Please point to the new location, or install the package and use the command 'subword-nmt'".format(newdir),
-            DeprecationWarning
-        )
+    # # python 2/3 compatibility
+    # if sys.version_info < (3, 0):
+    #     sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
+    #     sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
+    #     sys.stdin = codecs.getreader('UTF-8')(sys.stdin)
+    # else:
+    #     sys.stderr = codecs.getwriter('UTF-8')(sys.stderr.buffer)
+    #     sys.stdout = codecs.getwriter('UTF-8')(sys.stdout.buffer)
+    #     sys.stdin = codecs.getreader('UTF-8')(sys.stdin.buffer)
 
-    # python 2/3 compatibility
-    if sys.version_info < (3, 0):
-        sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
-        sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
-        sys.stdin = codecs.getreader('UTF-8')(sys.stdin)
-    else:
-        sys.stderr = codecs.getwriter('UTF-8')(sys.stderr.buffer)
-        sys.stdout = codecs.getwriter('UTF-8')(sys.stdout.buffer)
-        sys.stdin = codecs.getreader('UTF-8')(sys.stdin.buffer)
+    # parser = create_parser()
+    # args = parser.parse_args()
 
-    parser = create_parser()
-    args = parser.parse_args()
+    # if args.num_workers <= 0:
+    #     args.num_workers = cpu_count()
 
-    if args.num_workers <= 0:
-        args.num_workers = cpu_count()
+    # if sys.version_info < (3, 0) and args.num_workers > 1:
+    #     args.num_workers = 1
+    #     warnings.warn("Parallel mode is only supported in Python3. Using 1 processor instead.")
 
-    if sys.version_info < (3, 0) and args.num_workers > 1:
-        args.num_workers = 1
-        warnings.warn("Parallel mode is only supported in Python3. Using 1 processor instead.")
+    # # read/write files as UTF-8
+    # if args.input.name != '<stdin>':
+    #     args.input = codecs.open(args.input.name, encoding='utf-8')
+    # if args.output.name != '<stdout>':
+    #     args.output = codecs.open(args.output.name, 'w', encoding='utf-8')
 
-    # read/write files as UTF-8
-    if args.input.name != '<stdin>':
-        args.input = codecs.open(args.input.name, encoding='utf-8')
-    if args.output.name != '<stdout>':
-        args.output = codecs.open(args.output.name, 'w', encoding='utf-8')
-
-    learn_bpe(args.input, args.output, args.symbols, args.min_frequency, args.verbose, is_dict=args.dict_input, total_symbols=args.total_symbols, num_workers=args.num_workers)
+    # learn_bpe(args.input, args.output, args.symbols, args.min_frequency, args.verbose, is_dict=args.dict_input, total_symbols=args.total_symbols, num_workers=args.num_workers)
